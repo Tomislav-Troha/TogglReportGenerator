@@ -1,75 +1,103 @@
 ﻿<Window x:Class="TogglToExcel.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Toggl Exporter" Height="350" Width="400" WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize" Icon="appicon.ico">
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <!-- API Token -->
-            <RowDefinition Height="Auto"/>
-            <!-- Workspace ID -->
-            <RowDefinition Height="Auto"/>
-            <!-- Email -->
-            <RowDefinition Height="Auto"/>
-            <!-- Od datum -->
-            <RowDefinition Height="Auto"/>
-            <!-- Do datum -->
-            <RowDefinition Height="Auto"/>
-            <!-- Button -->
-            <RowDefinition Height="*"/>
-            <!-- Status -->
-        </Grid.RowDefinitions>
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:local="clr-namespace:TogglToExcel"
+        xmlns:viewmodel="clr-namespace:TogglToExcel.ViewModel"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local1="clr-namespace:TogglToExcel.Converters"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewmodel:MainWindowViewModel, IsDesignTimeCreatable=True}"
+        Title="Toggl Exporter"
+        Height="420" Width="420"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Icon="appicon.ico"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}">
 
-        <!-- API Token -->
-        <StackPanel Orientation="Horizontal" Margin="0 0 0 10">
-            <Label Content="API Token:" Width="80"/>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        <local1:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisConverter"/>
+    </Window.Resources>
 
-            <!-- Hidden field -->
-            <PasswordBox x:Name="pwdApiToken" Width="200" Visibility="Visible" PasswordChanged="PwdApiToken_PasswordChanged"/>
+    <Grid>
+        <Grid Margin="20">
+            <StackPanel>
+                <!-- API Token -->
+                <StackPanel Orientation="Horizontal" Margin="0 0 0 10" VerticalAlignment="Center">
+                    <Label Content="API Token:" Width="80" VerticalAlignment="Center"/>
+                    <Grid>
+                        <PasswordBox x:Name="pwdApiToken"
+                                     Width="240"
+                                     Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
+                                     Visibility="{Binding IsApiVisible, Converter={StaticResource InverseBoolToVisConverter}}"
+                                     PasswordChanged="pwdApiToken_PasswordChanged"/>
+                        <TextBox x:Name="txtApiTokenVisible"
+                                 Width="240"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 Visibility="{Binding IsApiVisible, Converter={StaticResource BoolToVisConverter}}"
+                                 Text="{Binding ApiToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+                    <Button Style="{StaticResource MaterialDesignIconButton}"
+                            Command="{Binding ToggleApiCommand}"
+                            Content="👁" Width="30" Margin="10 0 0 0"/>
+                </StackPanel>
 
-            <!-- Visible field -->
-            <TextBox x:Name="txtApiTokenVisible" Width="200" Visibility="Collapsed" TextChanged="TxtApiTokenVisible_TextChanged"/>
+                <!-- Workspace ID -->
+                <TextBox Margin="0 0 0 10"
+                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                         materialDesign:HintAssist.Hint="Workspace ID"
+                         Text="{Binding WorkspaceId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-            <Button x:Name="btnToggleApi" Content="👁" Width="30" Click="BtnToggleApi_Click"/>
-        </StackPanel>
+                <!-- Email -->
+                <TextBox Margin="0 0 0 10"
+                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                         materialDesign:HintAssist.Hint="Email"
+                         Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <!-- Workspace ID -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0 0 0 10">
-            <Label Content="WorkspaceID:" Width="80"/>
-            <TextBox x:Name="txtWorkspaceId" Width="250"/>
-        </StackPanel>
+                <!-- Datum Od -->
+                <DatePicker Margin="0 0 0 10"
+                            Style="{StaticResource MaterialDesignDatePicker}"
+                            materialDesign:HintAssist.Hint="Datum od"
+                            SelectedDate="{Binding Since, Mode=TwoWay}"/>
 
-        <!-- Email -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0 0 0 10">
-            <Label Content="Email:" Width="80"/>
-            <TextBox x:Name="txtEmail" Width="250"/>
-        </StackPanel>
+                <!-- Datum Do -->
+                <DatePicker Margin="0 0 0 20"
+                            Style="{StaticResource MaterialDesignDatePicker}"
+                            materialDesign:HintAssist.Hint="Datum do"
+                            SelectedDate="{Binding Until, Mode=TwoWay}"/>
 
-        <!-- Datum Od -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0 0 0 10">
-            <Label Content="Od:" Width="80"/>
-            <DatePicker x:Name="dpFrom"/>
-        </StackPanel>
+                <!-- Export Button -->
+                <Button Content="Exportaj"
+                        Command="{Binding ExportCommand}"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Height="40" Width="100"
+                        HorizontalAlignment="Center"/>
 
-        <!-- Datum Do -->
-        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0 0 0 10">
-            <Label Content="Do:" Width="80"/>
-            <DatePicker x:Name="dpTo"/>
-        </StackPanel>
+                <!-- Status kao TextBlock s InputBinding -->
+                <TextBlock Text="{Binding StatusText}"
+                           Foreground="{Binding StatusBrush}"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           Margin="0 20 0 0"
+                           Cursor="Hand"
+                           TextDecorations="Underline">
+                    <TextBlock.InputBindings>
+                        <MouseBinding MouseAction="LeftClick"
+                                      Command="{Binding OpenFolderCommand}"/>
+                    </TextBlock.InputBindings>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
 
-        <!-- Export Button -->
-        <Button Grid.Row="5" Margin="15" Content="Exportaj" Width="100" Click="Export_Click"/>
-
-        <!-- Status -->
-        <TextBlock Grid.Row="6"
-           x:Name="txtStatus"
-           Margin="0 20 0 0"
-           HorizontalAlignment="Center"
-           TextWrapping="Wrap"
-           Cursor="Hand"
-           TextDecorations="Underline"
-           MouseLeftButtonUp="txtStatus_MouseLeftButtonUp"
-           ToolTip="Klikni za otvaranje mape" />
+        <TextBlock Text="TT"
+                   FontSize="10"
+                   Opacity="0.6"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Bottom"
+                   Margin="0,0,5,5"
+                   Foreground="{DynamicResource MaterialDesignBody}"/>
     </Grid>
 </Window>

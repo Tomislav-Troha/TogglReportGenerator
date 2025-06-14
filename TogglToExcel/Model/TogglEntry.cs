@@ -1,4 +1,4 @@
-﻿namespace TogglToExcel
+﻿namespace TogglToExcel.Model
 {
     public class TogglEntry
     {
