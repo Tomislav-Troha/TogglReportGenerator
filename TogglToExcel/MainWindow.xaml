@@ -5,6 +5,7 @@
         xmlns:local="clr-namespace:TogglToExcel"
         xmlns:viewmodel="clr-namespace:TogglToExcel.ViewModel"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local1="clr-namespace:TogglToExcel.Converters"
         mc:Ignorable="d"
@@ -16,6 +17,7 @@
         Icon="appicon.ico"
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}">
+
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
@@ -64,7 +66,7 @@
                                   </Hyperlink>
                             </TextBlock>
                             
-                            <TextBlock Text="2. Scrollaj do 'API Token'" />
+                            <TextBlock Text="2. Scrollaj do 'API Token' (-- Click to reveal --)" />
 
                             <TextBlock Text="3. Kopiraj i zalijepi ovdje" />
                             
@@ -146,5 +148,14 @@
                    VerticalAlignment="Bottom"
                    Margin="0,0,5,5"
                    Foreground="{DynamicResource MaterialDesignBody}"/>
+
+        <Button
+        Style="{StaticResource MaterialDesignIconButton}"
+        Command="{Binding DeleteUserSettings}"
+        HorizontalAlignment="Left"
+        ToolTip="Resetiraj svoje postavke"
+        VerticalAlignment="Bottom"
+        Opacity="0.6"
+        Content="❌" Width="25" Height="25" Margin="0 0 0 0"/>
     </Grid>
 </Window>
