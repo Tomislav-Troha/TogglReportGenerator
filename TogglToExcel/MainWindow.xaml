@@ -17,6 +17,7 @@
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}">
 
+
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
         <local1:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisConverter"/>
@@ -64,7 +65,7 @@
                                   </Hyperlink>
                             </TextBlock>
                             
-                            <TextBlock Text="2. Scrollaj do 'API Token'" />
+                            <TextBlock Text="2. Scrollaj do 'API Token' (-- Click to reveal --)" />
 
                             <TextBlock Text="3. Kopiraj i zalijepi ovdje" />
                             
@@ -146,5 +147,14 @@
                    VerticalAlignment="Bottom"
                    Margin="0,0,5,5"
                    Foreground="{DynamicResource MaterialDesignBody}"/>
+
+        <Button
+        Style="{StaticResource MaterialDesignIconButton}"
+        Command="{Binding DeleteUserSettings}"
+        HorizontalAlignment="Left"
+        ToolTip="Resetiraj svoje postavke"
+        VerticalAlignment="Bottom"
+        Opacity="0.6"
+        Content="❌" Width="25" Height="25" Margin="0 0 0 0"/>
     </Grid>
 </Window>

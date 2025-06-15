@@ -29,10 +29,12 @@ namespace TogglToExcel.ViewModel
             ExportCommand = new RelayCommand(async _ => await ExportAsync(), _ => !IsProcessing);
             ToggleApiCommand = new RelayCommand(_ => ToggleApiVisibility());
             OpenFolderCommand = new RelayCommand(_ => OpenFolder(), _ => File.Exists(lastSavedPath ?? string.Empty));
+            DeleteUserSettings = new RelayCommand(_ => DeleteSettings());
 
             StatusText = "Ready";
             StatusBrush = Brushes.Black;
         }
+
         #endregion
 
         #region Properties
@@ -143,6 +145,7 @@ namespace TogglToExcel.ViewModel
         public ICommand ExportCommand { get; }
         public ICommand ToggleApiCommand { get; }
         public ICommand OpenFolderCommand { get; }
+        public ICommand DeleteUserSettings { get; }
         #endregion
 
         #region Private Methods
@@ -370,7 +373,6 @@ namespace TogglToExcel.ViewModel
 
                 if (arr.Count > 1)
                 {
-                    Workspaces.Clear();
                     MoreWorkspacesFound = true;
 
                     foreach (var item in arr)
@@ -385,8 +387,8 @@ namespace TogglToExcel.ViewModel
                         });
                     }
 
-                    WorkspaceId = arr[0]["id"]!.ToString();
-                    return "";
+                    WorkspaceId ??= arr[0]["id"]!.ToString();
+                    return WorkspaceId;
                 }
 
                 MoreWorkspacesFound = false;
@@ -433,6 +435,15 @@ namespace TogglToExcel.ViewModel
             var name = orgResult["name"]?.ToString() ?? "";
 
             return name;
+        }
+
+        public void DeleteSettings()
+        {
+            Properties.Settings.Default.Reset();
+            ApiToken = "";
+            WorkspaceId = "";
+            Email = "";
+            IsApiVisible = true;
         }
 
         #endregion
