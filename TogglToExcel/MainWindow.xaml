@@ -5,6 +5,7 @@
         xmlns:local="clr-namespace:TogglToExcel"
         xmlns:viewmodel="clr-namespace:TogglToExcel.ViewModel"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local1="clr-namespace:TogglToExcel.Converters"
         mc:Ignorable="d"
