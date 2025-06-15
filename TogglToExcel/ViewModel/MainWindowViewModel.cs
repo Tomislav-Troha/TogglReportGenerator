@@ -1,13 +1,17 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Windows.Input;
 using System.Windows.Media;
 using ClosedXML.Excel;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TogglToExcel.Commands;
+using TogglToExcel.Model;
 using static TogglToExcel.Model.TogglEntry;
 
 namespace TogglToExcel.ViewModel
@@ -32,6 +36,8 @@ namespace TogglToExcel.ViewModel
         #endregion
 
         #region Properties
+        public ObservableCollection<WorkspaceItem> Workspaces { get; } = [];
+
         private bool _isApiVisible;
         public bool IsApiVisible
         {
@@ -43,14 +49,29 @@ namespace TogglToExcel.ViewModel
         public string ApiToken
         {
             get => _apiToken;
-            set { if (_apiToken != value) { _apiToken = value; OnPropertyChanged(nameof(ApiToken)); } }
+            set
+            {
+                if (_apiToken != value)
+                {
+                    _apiToken = value;
+                    OnPropertyChanged(nameof(ApiToken));
+                    _ = InitWorkspaceAsync(_apiToken);
+                }
+            }
         }
 
         private string _workspaceId = string.Empty;
         public string WorkspaceId
         {
             get => _workspaceId;
-            set { if (_workspaceId != value) { _workspaceId = value; OnPropertyChanged(nameof(WorkspaceId)); } }
+            set
+            {
+                if (_workspaceId != value)
+                {
+                    _workspaceId = value;
+                    OnPropertyChanged(nameof(WorkspaceId));
+                }
+            }
         }
 
         private string _email = string.Empty;
@@ -99,6 +120,20 @@ namespace TogglToExcel.ViewModel
                     _isProcessing = value;
                     OnPropertyChanged(nameof(IsProcessing));
                     ((RelayCommand)ExportCommand).RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        private bool _moreWorkspacesFound = false;
+        public bool MoreWorkspacesFound
+        {
+            get => _moreWorkspacesFound;
+            set
+            {
+                if (_moreWorkspacesFound != value)
+                {
+                    _moreWorkspacesFound = value;
+                    OnPropertyChanged(nameof(MoreWorkspacesFound));
                 }
             }
         }
@@ -184,7 +219,7 @@ namespace TogglToExcel.ViewModel
             var client = new HttpClient();
             var auth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{request.ApiToken}:api_token"));
             client.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", auth);
+                new AuthenticationHeaderValue("Basic", auth);
 
             string urlBase = $"https://api.track.toggl.com/reports/api/v2/details" +
                              $"?workspace_id={request.WorkspaceId}&since={request.Since}&until={request.Until}&user_agent={request.UserAgent}&page=";
@@ -285,8 +320,123 @@ namespace TogglToExcel.ViewModel
             WorkspaceId = Properties.Settings.Default.WorkspaceId;
             Email = Properties.Settings.Default.Email;
         }
+
+        private async Task InitWorkspaceAsync(string apiKey)
+        {
+            try
+            {
+                WorkspaceId = await GetWorkspaceIdAsync(apiKey);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error fetching workspace: {ex.Message}");
+            }
+        }
+
+
+        private async Task<string> GetWorkspaceIdAsync(string apiToken)
+        {
+            var cts = new CancellationTokenSource();
+            try
+            {
+
+                if (string.IsNullOrEmpty(apiToken)) return "";
+
+                using var client = new HttpClient();
+                var creds = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{apiToken}:api_token"));
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Basic", creds);
+
+                var result = await client.GetAsync("https://api.track.toggl.com/api/v9/workspaces");
+
+                if (result.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                {
+                    StatusText = "Api token nije ispravan.";
+                    StatusBrush = Brushes.Red;
+                    Workspaces.Clear();
+                    return "";
+                }
+
+                result.EnsureSuccessStatusCode();
+
+                var arr = JArray.Parse(await result.Content.ReadAsStringAsync());
+
+                if (arr == null || arr.Count == 0 || arr[0]?["id"] == null)
+                {
+                    StatusText = "No workspaces found or invalid response format";
+                    StatusBrush = Brushes.Red;
+                    throw new InvalidOperationException("No workspaces found or invalid response format.");
+                }
+
+                if (arr.Count > 1)
+                {
+                    Workspaces.Clear();
+                    MoreWorkspacesFound = true;
+
+                    foreach (var item in arr)
+                    {
+                        string orgId = item["organization_id"]!.ToString();
+
+                        Workspaces.Add(new WorkspaceItem
+                        {
+                            Id = item["id"]!.ToString(),
+                            Name = item["name"]!.ToString(),
+                            OrganizationName = await GetOrganizationNameAsync(apiToken, orgId)
+                        });
+                    }
+
+                    WorkspaceId = arr[0]["id"]!.ToString();
+                    return "";
+                }
+
+                MoreWorkspacesFound = false;
+                StatusText = "WorkspaceID uspješno importan";
+                StatusBrush = Brushes.Green;
+                try
+                {
+                    WorkspaceId = arr[0]["id"]!.ToString();
+                    await Task.Delay(3000, cts.Token);
+                    StatusText = "";
+                }
+                catch (OperationCanceledException)
+                {
+                    StatusText = "";
+                }
+                StatusText = "";
+
+                return arr[0]["id"]!.ToString();
+            }
+            catch (Exception ex)
+            {
+                StatusText = ex.Message;
+                StatusBrush = Brushes.Red;
+                return "";
+            }
+        }
+
+        private static async Task<string> GetOrganizationNameAsync(string apiToken, string orgId)
+        {
+            if (string.IsNullOrWhiteSpace(apiToken) || string.IsNullOrWhiteSpace(orgId))
+                return "";
+
+            using var client = new HttpClient();
+            var creds = Convert.ToBase64String(
+                Encoding.ASCII.GetBytes($"{apiToken}:api_token"));
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Basic", creds);
+
+            var json = await client
+                .GetStringAsync($"https://api.track.toggl.com/api/v9/organizations/{orgId}");
+
+            var orgResult = JObject.Parse(json);
+
+            var name = orgResult["name"]?.ToString() ?? "";
+
+            return name;
+        }
+
         #endregion
-        
+
         #region Events 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string name) =>

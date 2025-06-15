@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using TogglToExcel.ViewModel;
 
 namespace TogglToExcel
@@ -28,6 +30,15 @@ namespace TogglToExcel
         {
             if (DataContext is MainWindowViewModel vm)
                 vm.ApiToken = ((PasswordBox)sender).Password;
+        }
+
+        private void Hyperlink_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Hyperlink hl && hl.Inlines.FirstInline is Run run)
+            {
+                var uri = run.Text;
+                Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true });
+            }
         }
     }
 }

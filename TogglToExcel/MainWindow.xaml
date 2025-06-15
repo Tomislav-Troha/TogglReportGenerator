@@ -10,7 +10,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodel:MainWindowViewModel, IsDesignTimeCreatable=True}"
         Title="Toggl Exporter"
-        Height="420" Width="420"
+        Height="420" Width="460"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         Icon="appicon.ico"
@@ -43,13 +43,60 @@
                     <Button Style="{StaticResource MaterialDesignIconButton}"
                             Command="{Binding ToggleApiCommand}"
                             Content="👁" Width="30" Margin="10 0 0 0"/>
+
+                    <materialDesign:PopupBox
+                        PlacementMode="BottomAndAlignCentres"
+                        PopupMode="Click"     
+                        StaysOpen="False"
+                        Width="25" Height="25"
+                        Margin="5,0,0,0">
+
+                        <StackPanel Margin="10">
+                            <TextBlock Text="Kako dohvatiti API token: " Margin="5"/>
+
+                            <TextBlock>
+                                 1. Otvori
+                                 <Hyperlink 
+                                    PreviewMouseLeftButtonUp="Hyperlink_Click"
+                                    Cursor="Hand"
+                                    TextDecorations="Underline">
+                                    https://track.toggl.com/profile
+                                  </Hyperlink>
+                            </TextBlock>
+                            
+                            <TextBlock Text="2. Scrollaj do 'API Token'" />
+
+                            <TextBlock Text="3. Kopiraj i zalijepi ovdje" />
+                            
+                            <TextBlock Text="4. Ako je API Token točan `WorkspaceId` se automatski popunjuje :D" />
+                        </StackPanel>
+
+                        <materialDesign:PopupBox.ToggleContent>
+                            <materialDesign:PackIcon Kind="HelpCircleOutline"
+                                    Width="16" Height="16"/>
+                        </materialDesign:PopupBox.ToggleContent>
+                    </materialDesign:PopupBox>
+
+
                 </StackPanel>
 
                 <!-- Workspace ID -->
-                <TextBox Margin="0 0 0 10"
-                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                         materialDesign:HintAssist.Hint="Workspace ID"
-                         Text="{Binding WorkspaceId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <StackPanel>
+                    <TextBox Margin="0 0 0 10"
+                       Visibility="{Binding MoreWorkspacesFound, Converter={StaticResource InverseBoolToVisConverter}}"
+                       Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                       materialDesign:HintAssist.Hint="Workspace ID"
+                       Text="{Binding WorkspaceId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <ComboBox Margin="0 0 0 10"
+                        Visibility="{Binding MoreWorkspacesFound, Converter={StaticResource BoolToVisConverter}}"
+                        Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                        materialDesign:HintAssist.Hint="Odaberi workspace"
+                        ItemsSource="{Binding Workspaces}"
+                        DisplayMemberPath="OrganizationName"
+                        SelectedValuePath="Id"
+                        SelectedValue="{Binding WorkspaceId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
 
                 <!-- Email -->
                 <TextBox Margin="0 0 0 10"
