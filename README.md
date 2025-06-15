@@ -1,25 +1,25 @@
 # TogglExcelExporter
 
-Jednostavna WPF aplikacija za izvoz detaljnih Toggl Track vremenskih zapisa u Excel (.xlsx) format.
+A simple WPF application for exporting detailed Toggl Track time entries to Excel (`.xlsx`) format.
 
-## Značajke
+## Features
 
-- Unos API tokena, Workspace ID-a i e-maila (user agent)
-- Automatsko pamćenje korisničkih postavki
-- Export detaljnih vremenskih zapisa (po danu, projektu, opisu)
-- Automatski predodabir datuma od ponedjeljka do petka
-- Ikona aplikacije, onemogućeno resizeanje i centriranje prozora
-- Klik na status otvara spremljeni Excel
+- Input for API token, Workspace ID, and email (user agent)
+- Automatic saving of user settings
+- Export detailed time entries (by day, project, description)
+- Automatic date range preset from Monday to Friday
+- App icon, fixed-size window, and centered on screen
+- Click on status opens the saved Excel file location
 
-## Kako koristiti
+## How to Use
 
-1. Pokreni aplikaciju
-2. Unesi svoj API token, Workspace ID i e-mail
-3. Odaberi datumski raspon (ili koristi zadani)
-4. Klikni **Exportaj**
-5. Excel se sprema na Desktop i automatski otvara lokacija datoteke
+1. Run the application  
+2. Enter your API token, Workspace ID, and email  
+3. Select the date range (or use the default one)  
+4. Click **Export**  
+5. The Excel file is saved to your Desktop and its folder opens automatically
 
-## Napomena
+## Note
 
-API mora biti deaktiviran prije exporta aktivnih (trenutno pokrenutih) timera.  
-Svi podaci ostaju lokalno i nisu nigdje slani.
+The API must be deactivated before exporting active (currently running) timers.  
+All data remains local and is never transmitted elsewhere.
